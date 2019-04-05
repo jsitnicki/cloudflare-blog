@@ -21,7 +21,7 @@ struct bpf_map_def {
 static void *(*bpf_map_lookup_elem)(void *map, const void *key) =
 	(void *) BPF_FUNC_map_lookup_elem;
 static void *(*bpf_map_update_elem)(void *map, const void *key,
-				    const void *value, u64 flags) =
+				    void *value, u64 flags) =
 	(void *) BPF_FUNC_map_update_elem;
 
 
@@ -42,7 +42,6 @@ enum args_keys {
 	ARG_0,
 	ARG_1,
 	RES_0,
-	RES_1,
 	MAX_KEY
 };
 
@@ -73,11 +72,9 @@ int filter(struct __sk_buff *skb UNUSED)
 	a = args_get(ARG_0);
 	b = args_get(ARG_1);
 
-	r = a + b;
-	args_put(RES_0, r);
-
 	r = a - b;
-	args_put(RES_1, r);
+
+	args_put(RES_0, r);
 
 	return SK_PASS;
 }

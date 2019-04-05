@@ -17,7 +17,6 @@ const (
 	ARG_0 uint32 = iota
 	ARG_1
 	RES_0
-	RES_1
 )
 
 func loadBPF() (sockPair [2]int, argsMap *ebpf.Map, err error) {
@@ -53,7 +52,7 @@ func loadBPF() (sockPair [2]int, argsMap *ebpf.Map, err error) {
 	return
 }
 
-func runBPF(sockPair [2]int, argsMap *ebpf.Map, arg0, arg1 uint64) (res0, res1 uint64, err error) {
+func runBPF(sockPair [2]int, argsMap *ebpf.Map, arg0, arg1 uint64) (res0 uint64, err error) {
 	err = argsMap.Put(ARG_0, arg0)
 	if err != nil {
 		return
@@ -74,10 +73,6 @@ func runBPF(sockPair [2]int, argsMap *ebpf.Map, arg0, arg1 uint64) (res0, res1 u
 	}
 
 	_, err = argsMap.Get(RES_0, &res0)
-	if err != nil {
-		return
-	}
-	_, err = argsMap.Get(RES_1, &res1)
 	if err != nil {
 		return
 	}
@@ -119,13 +114,12 @@ func main() {
 		syscall.Close(sockPair[1])
 	}()
 
-	sum, diff, err := runBPF(sockPair, argsMap, arg0, arg1)
+	diff, err := runBPF(sockPair, argsMap, arg0, arg1)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("arg0 %20d %#016[1]x\n", arg0)
 	fmt.Printf("arg1 %20d %#016[1]x\n", arg1)
-	fmt.Printf(" sum %20d %#016[1]x\n", sum)
 	fmt.Printf("diff %20d %#016[1]x\n", diff)
 }
