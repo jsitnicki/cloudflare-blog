@@ -1,8 +1,12 @@
 rule cc-bpf
   command = clang -g -O2 -Wall -Wextra -target bpf -c $in -o $out
 
+rule objdump-bpf
+  command = llvm-objdump -S -no-show-raw-insn $in > $out
+
 rule go-build
   command = go build -o $out $in
 
 build bpf/filter.o: cc-bpf bpf/filter.c
+build bpf/filter.S: objdump-bpf bpf/filter.o
 build run-bpf: go-build run_bpf.go | bpf/filter.o
