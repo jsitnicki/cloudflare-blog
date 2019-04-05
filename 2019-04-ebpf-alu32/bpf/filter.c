@@ -54,31 +54,30 @@ struct bpf_map_def args = {
 	.max_entries	= MAX_KEY,
 };
 
+static u64 args_get(u32 key)
+{
+	u64 *v = bpf_map_lookup_elem(&args, &key);
+	return v ? *v : 0;
+}
+
+static void args_put(u32 key, u64 v)
+{
+	bpf_map_update_elem(&args, &key, &v, BPF_ANY);
+}
+
 SEC("socket")
 int filter(struct __sk_buff *skb UNUSED)
 {
-	u64 *a, *b, r;
-	u32 key;
+	u64 a, b, r;
 
-	key = ARG_0;
-	a = bpf_map_lookup_elem(&args, &key);
-	if (!a)
-		return SK_DROP;
+	a = args_get(ARG_0);
+	b = args_get(ARG_1);
 
-	key = ARG_1;
-	b = bpf_map_lookup_elem(&args, &key);
-	if (!b)
-		return SK_DROP;
+	r = a + b;
+	args_put(RES_0, r);
 
-	r = *a + *b;
-
-	key = RES_0;
-	bpf_map_update_elem(&args, &key, &r, BPF_ANY);
-
-	r = *a - *b;
-
-	key = RES_1;
-	bpf_map_update_elem(&args, &key, &r, BPF_ANY);
+	r = a - b;
+	args_put(RES_1, r);
 
 	return SK_PASS;
 }
