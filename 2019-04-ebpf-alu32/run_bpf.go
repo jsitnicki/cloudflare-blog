@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,14 +10,21 @@ import (
 	"github.com/newtools/ebpf"
 )
 
+// Missing constnants in syscall
 const (
+	SIGSTOP       = 19
 	SO_ATTACH_BPF = 50
 )
 
+// BPF map keys
 const (
 	ARG_0 uint32 = iota
 	ARG_1
 	RES_0
+)
+
+var (
+	stopAfterLoad = flag.Bool("stop-after-load", false, "Stop the process after loading BPF program")
 )
 
 func loadBPF() (sockPair [2]int, argsMap *ebpf.Map, err error) {
@@ -81,16 +89,20 @@ func runBPF(sockPair [2]int, argsMap *ebpf.Map, arg0, arg1 uint64) (res0 uint64,
 }
 
 func parseArgs() (uint64, uint64) {
-	if len(os.Args) < 3 {
-		fmt.Fprintf(os.Stderr, "Usage: run-bpf uint64 uint64\n")
+	flag.Parse()
+
+	if flag.NArg() != 2 {
+		fmt.Fprintf(os.Stderr, "Usage: run-bpf [options] uint64 uint64\n\n")
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	arg0, err := strconv.ParseUint(os.Args[1], 0, 64)
+	arg0, err := strconv.ParseUint(flag.Arg(0), 0, 64)
 	if err != nil {
 		panic(err)
 	}
-	arg1, err := strconv.ParseUint(os.Args[2], 0, 64)
+	arg1, err := strconv.ParseUint(flag.Arg(1), 0, 64)
 	if err != nil {
 		panic(err)
 	}
@@ -113,6 +125,10 @@ func main() {
 		syscall.Close(sockPair[0])
 		syscall.Close(sockPair[1])
 	}()
+
+	if *stopAfterLoad {
+		syscall.Kill(0, SIGSTOP)
+	}
 
 	diff, err := runBPF(sockPair, argsMap, arg0, arg1)
 	if err != nil {
