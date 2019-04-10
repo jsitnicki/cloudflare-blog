@@ -65,8 +65,8 @@ static _inline_ void args_put(u32 key, u64 v)
 	bpf_map_update_elem(&args, &key, &v, BPF_ANY);
 }
 
-_section_("socket")
-int filter(struct __sk_buff *skb _unused_)
+_section_("socket1")
+int filter1(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
@@ -74,6 +74,52 @@ int filter(struct __sk_buff *skb _unused_)
 	b = args_get(ARG_1);
 
 	r = a - b;
+
+	args_put(RES_0, r);
+
+	return SK_PASS;
+}
+
+static _inline_ u64 sub64v2(u64 x, u64 y)
+{
+        u32 xh, xl, yh, yl;
+        u32 hi, lo;
+
+        xl = x;
+        yl = y;
+        lo = xl - yl;
+
+        xh = x >> 32;
+        yh = y >> 32;
+        hi = xh - yh - (lo > xl); /* underflow? */
+
+        return ((u64)hi << 32) | (u64)lo;
+}
+
+_section_("socket2")
+int filter2(struct __sk_buff *skb _unused_)
+{
+	u64 a, b, r;
+
+	a = args_get(ARG_0);
+	b = args_get(ARG_1);
+
+	r = sub64v2(a, b);
+
+	args_put(RES_0, r);
+
+	return SK_PASS;
+}
+
+_section_("socket2")
+int filter2(struct __sk_buff *skb _unused_)
+{
+	u64 a, b, r;
+
+	a = args_get(ARG_0);
+	b = args_get(ARG_1);
+
+	r = sub64(a, b);
 
 	args_put(RES_0, r);
 

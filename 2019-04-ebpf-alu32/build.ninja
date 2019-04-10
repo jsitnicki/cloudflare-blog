@@ -1,5 +1,5 @@
 rule cc-bpf
-  command = clang -g -O2 -Wall -Wextra -target bpf -c $in -o $out
+  command = clang -g -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -c $in -o $out
 
 rule objdump-bpf
   command = llvm-objdump -S -no-show-raw-insn $in > $out

@@ -24,6 +24,7 @@ const (
 )
 
 var (
+	filterNum     = flag.Uint("filter", 1, "Filter number to load")
 	stopAfterLoad = flag.Bool("stop-after-load", false, "Stop the process after loading BPF program")
 )
 
@@ -34,9 +35,10 @@ func loadBPF() (sockPair [2]int, argsMap *ebpf.Map, err error) {
 	}
 	defer coll.Close()
 
-	prog := coll.DetachProgram("filter")
+	progName := fmt.Sprintf("filter%d", *filterNum)
+	prog := coll.DetachProgram(progName)
 	if prog == nil {
-		err = fmt.Errorf("program 'filter' not found")
+		err = fmt.Errorf("program %q not found", progName)
 		return
 	}
 	defer prog.Close()
