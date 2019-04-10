@@ -1,7 +1,7 @@
 #include <linux/bpf.h>
 
-#define SEC(NAME) __attribute__((section(NAME), used))
-#define UNUSED    __attribute__((unused))
+#define _section_(NAME) __attribute__((section(NAME), used))
+#define _unused_        __attribute__((unused))
 
 /* stdint.h pulls in architecture specific headers on some distros */
 typedef unsigned char  u8;
@@ -45,7 +45,7 @@ enum args_keys {
 	MAX_KEY
 };
 
-SEC("maps")
+_section_("maps")
 struct bpf_map_def args = {
 	.type		= BPF_MAP_TYPE_ARRAY,
 	.key_size	= sizeof(u32),
@@ -64,8 +64,8 @@ static void args_put(u32 key, u64 v)
 	bpf_map_update_elem(&args, &key, &v, BPF_ANY);
 }
 
-SEC("socket")
-int filter(struct __sk_buff *skb UNUSED)
+_section_("socket")
+int filter(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
@@ -79,4 +79,4 @@ int filter(struct __sk_buff *skb UNUSED)
 	return SK_PASS;
 }
 
-char __license[] SEC("license") = "Dual BSD/GPL";
+char __license[] _section_("license") = "Dual BSD/GPL";
