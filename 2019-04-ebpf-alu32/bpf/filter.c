@@ -1,5 +1,6 @@
 #include <linux/bpf.h>
 
+#define _inline_        __attribute__((always_inline))
 #define _section_(NAME) __attribute__((section(NAME), used))
 #define _unused_        __attribute__((unused))
 
@@ -53,13 +54,13 @@ struct bpf_map_def args = {
 	.max_entries	= MAX_KEY,
 };
 
-static u64 args_get(u32 key)
+static _inline_ u64 args_get(u32 key)
 {
 	u64 *v = bpf_map_lookup_elem(&args, &key);
 	return v ? *v : 0;
 }
 
-static void args_put(u32 key, u64 v)
+static _inline_ void args_put(u32 key, u64 v)
 {
 	bpf_map_update_elem(&args, &key, &v, BPF_ANY);
 }
