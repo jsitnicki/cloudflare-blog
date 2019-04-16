@@ -28,66 +28,98 @@ var (
 	stopAfterLoad = flag.Bool("stop-after-load", false, "Stop the process after loading BPF program")
 )
 
-func loadBPF() (sockPair [2]int, argsMap *ebpf.Map, err error) {
+type SocketPair [2]int
+
+func (p SocketPair) Close() error {
+	err1 := syscall.Close(p[0])
+	err2 := syscall.Close(p[1])
+
+	if err1 != nil {
+		return err1
+	}
+	return err2
+}
+
+type Context struct {
+	ArgsMap  *ebpf.Map
+	SockPair SocketPair
+}
+
+func (c *Context) Close() error {
+	err1 := c.ArgsMap.Close()
+	err2 := c.SockPair.Close()
+
+	if err1 != nil {
+		return err1
+	}
+	return err2
+}
+
+func loadBPF() (*Context, error) {
 	coll, err := ebpf.LoadCollection("bpf/filter.o")
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer coll.Close()
 
 	progName := fmt.Sprintf("filter%d", *filterNum)
 	prog := coll.DetachProgram(progName)
 	if prog == nil {
-		err = fmt.Errorf("program %q not found", progName)
-		return
+		return nil, fmt.Errorf("program %q not found", progName)
 	}
 	defer prog.Close()
 
-	argsMap = coll.DetachMap("args")
+	argsMap := coll.DetachMap("args")
 	if argsMap == nil {
-		err = fmt.Errorf("map 'args' not found")
-		return
+		return nil, fmt.Errorf("map 'args' not found")
 	}
 
-	sockPair, err = syscall.Socketpair(syscall.AF_UNIX, syscall.SOCK_DGRAM, 0)
+	sockPair, err := syscall.Socketpair(syscall.AF_UNIX, syscall.SOCK_DGRAM, 0)
 	if err != nil {
-		return
+		argsMap.Close()
+		return nil, err
 	}
 
 	err = syscall.SetsockoptInt(sockPair[0], syscall.SOL_SOCKET, SO_ATTACH_BPF, prog.FD())
 	if err != nil {
-		return
+		argsMap.Close()
+		SocketPair(sockPair).Close()
+		return nil, err
 	}
 
-	return
+	return &Context{ArgsMap: argsMap, SockPair: sockPair}, nil
 }
 
-func runBPF(sockPair [2]int, argsMap *ebpf.Map, arg0, arg1 uint64) (res0 uint64, err error) {
-	err = argsMap.Put(ARG_0, arg0)
+func runBPF(ctx *Context, arg0, arg1 uint64) (uint64, error) {
+	var (
+		err error
+		res uint64
+	)
+	err = ctx.ArgsMap.Put(ARG_0, arg0)
 	if err != nil {
-		return
+		return 0, err
 	}
-	err = argsMap.Put(ARG_1, arg1)
+	err = ctx.ArgsMap.Put(ARG_1, arg1)
 	if err != nil {
-		return
+		return 0, err
 	}
 
 	// Run an empty message through the BPF filter.
-	_, err = syscall.Write(sockPair[1], nil)
+	_, err = syscall.Write(ctx.SockPair[1], nil)
 	if err != nil {
-		return
+		return 0, err
 	}
-	_, err = syscall.Read(sockPair[0], nil)
+	_, err = syscall.Read(ctx.SockPair[0], nil)
 	if err != nil {
-		return
-	}
-
-	_, err = argsMap.Get(RES_0, &res0)
-	if err != nil {
-		return
+		return 0, err
 	}
 
-	return
+	_, err = ctx.ArgsMap.Get(RES_0, &res)
+	if err != nil {
+		return 0, err
+	}
+
+	return res, nil
 }
 
 func parseArgs() (uint64, uint64) {
@@ -114,25 +146,17 @@ func parseArgs() (uint64, uint64) {
 func main() {
 	arg0, arg1 := parseArgs()
 
-	var (
-		sockPair [2]int
-		argsMap  *ebpf.Map
-	)
-	sockPair, argsMap, err := loadBPF()
+	ctx, err := loadBPF()
 	if err != nil {
 		panic(err)
 	}
-	defer func() {
-		argsMap.Close()
-		syscall.Close(sockPair[0])
-		syscall.Close(sockPair[1])
-	}()
+	defer ctx.Close()
 
 	if *stopAfterLoad {
 		syscall.Kill(0, SIGSTOP)
 	}
 
-	diff, err := runBPF(sockPair, argsMap, arg0, arg1)
+	diff, err := runBPF(ctx, arg0, arg1)
 	if err != nil {
 		panic(err)
 	}
