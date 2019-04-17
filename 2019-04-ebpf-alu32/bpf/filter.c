@@ -1,14 +1,9 @@
 #include <linux/bpf.h>
+#include "common.h"
 
 #define _inline_        __attribute__((always_inline))
 #define _section_(NAME) __attribute__((section(NAME), used))
 #define _unused_        __attribute__((unused))
-
-/* stdint.h pulls in architecture specific headers on some distros */
-typedef unsigned char  u8;
-typedef unsigned short u16;
-typedef unsigned int   u32;
-typedef unsigned long  u64;
 
 /* This definition is specific to your BPF ELF loader */
 struct bpf_map_def {

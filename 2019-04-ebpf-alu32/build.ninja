@@ -1,6 +1,12 @@
 rule cc-bpf
   command = clang -g -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -c $in -o $out
 
+rule ll-bpf
+  command = clang -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -emit-llvm -S -c $in -o $out
+
+rule llc-bpf
+  command = llc -march=bpf -mattr=+alu32 -filetype=obj $in -o $out
+
 rule objdump-bpf
   command = llvm-objdump -S -no-show-raw-insn $in > $out
 
@@ -10,3 +16,19 @@ rule go-build
 build bpf/filter.o: cc-bpf bpf/filter.c
 build bpf/filter.S: objdump-bpf bpf/filter.o
 build run-bpf: go-build run_bpf.go | bpf/filter.o
+
+#
+# Distilled examples for volatile load/store
+#
+
+build bpf/sub32_v1.ll: ll-bpf bpf/sub32_v1.c
+build bpf/sub32_v1.o: llc-bpf bpf/sub32_v1.ll
+build bpf/sub32_v1.s: objdump-bpf bpf/sub32_v1.o
+
+build bpf/sub32_v2.ll: ll-bpf bpf/sub32_v2.c
+build bpf/sub32_v2.o: llc-bpf bpf/sub32_v2.ll
+build bpf/sub32_v2.s: objdump-bpf bpf/sub32_v2.o
+
+build bpf/sub32_v3.ll: ll-bpf bpf/sub32_v3.c
+build bpf/sub32_v3.o: llc-bpf bpf/sub32_v3.ll
+build bpf/sub32_v3.s: objdump-bpf bpf/sub32_v3.o
