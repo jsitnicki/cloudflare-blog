@@ -1,6 +1,9 @@
 rule cc-bpf
   command = clang -g -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -c $in -o $out
 
+rule cc-amd64
+  command = clang -g -O2 -Wall -Wextra -target amd64 -c $in -o $out
+
 rule ll-bpf
   command = clang -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -emit-llvm -S -c $in -o $out
 
@@ -16,6 +19,13 @@ rule go-build
 build bpf/filter.o: cc-bpf bpf/filter.c
 build bpf/filter.S: objdump-bpf bpf/filter.o
 build run-bpf: go-build run_bpf.go | bpf/filter.o
+
+#
+# x86-64 example of 64-bit subtraction using 32-bit ops.
+#
+
+build amd64/sub64.o: cc-amd64 amd64/sub64.c
+build amd64/sub64.s: objdump amd64/sub64.o
 
 #
 # Distilled examples for volatile load/store
