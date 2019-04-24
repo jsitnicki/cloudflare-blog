@@ -10,14 +10,23 @@ rule ll-bpf
 rule llc-bpf
   command = llc -march=bpf -mattr=+alu32 -filetype=obj $in -o $out
 
-rule objdump-bpf
+rule as
+  command = llvm-as $in -o $out
+
+rule bc-link
+  command = llvm-link $in | opt -always-inline -o $out
+
+rule objdump
   command = llvm-objdump -S -no-show-raw-insn $in > $out
 
 rule go-build
   command = go build -o $out $in
 
-build bpf/filter.o: cc-bpf bpf/filter.c
-build bpf/filter.S: objdump-bpf bpf/filter.o
+build bpf/filter.ll: ll-bpf bpf/filter.c
+build bpf/filter.bc: bc-link bpf/filter.ll bpf/sub64v3.ll
+build bpf/filter.o: llc-bpf bpf/filter.bc
+build bpf/filter.s: objdump bpf/filter.o
+
 build run-bpf: go-build run_bpf.go | bpf/filter.o
 
 #
@@ -28,17 +37,26 @@ build amd64/sub64.o: cc-amd64 amd64/sub64.c
 build amd64/sub64.s: objdump amd64/sub64.o
 
 #
+# sub64v3 - manually tweaked IR
+#
+
+# Uncomment if you want to regenerate Clang's IR.
+#build bpf/sub64v3.ll: ll-bpf bpf/sub64v3.c
+build bpf/sub64v3.o: llc-bpf bpf/sub64v3.ll
+build bpf/sub64v3.s: objdump bpf/sub64v3.o
+
+#
 # Distilled examples for volatile load/store
 #
 
 build bpf/sub32_v1.ll: ll-bpf bpf/sub32_v1.c
 build bpf/sub32_v1.o: llc-bpf bpf/sub32_v1.ll
-build bpf/sub32_v1.s: objdump-bpf bpf/sub32_v1.o
+build bpf/sub32_v1.s: objdump bpf/sub32_v1.o
 
 build bpf/sub32_v2.ll: ll-bpf bpf/sub32_v2.c
 build bpf/sub32_v2.o: llc-bpf bpf/sub32_v2.ll
-build bpf/sub32_v2.s: objdump-bpf bpf/sub32_v2.o
+build bpf/sub32_v2.s: objdump bpf/sub32_v2.o
 
 build bpf/sub32_v3.ll: ll-bpf bpf/sub32_v3.c
 build bpf/sub32_v3.o: llc-bpf bpf/sub32_v3.ll
-build bpf/sub32_v3.s: objdump-bpf bpf/sub32_v3.o
+build bpf/sub32_v3.s: objdump bpf/sub32_v3.o

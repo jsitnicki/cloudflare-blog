@@ -106,15 +106,17 @@ int filter2(struct __sk_buff *skb _unused_)
 	return SK_PASS;
 }
 
-_section_("socket2")
-int filter2(struct __sk_buff *skb _unused_)
+extern u64 sub64v3(u64 x, u64 y);
+
+_section_("socket3")
+int filter3(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
 	a = args_get(ARG_0);
 	b = args_get(ARG_1);
 
-	r = sub64(a, b);
+	r = sub64v3(a, b);
 
 	args_put(RES_0, r);
 
