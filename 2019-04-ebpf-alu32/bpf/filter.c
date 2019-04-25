@@ -75,7 +75,7 @@ int filter1(struct __sk_buff *skb _unused_)
 	return SK_PASS;
 }
 
-static _inline_ u64 sub64v2(u64 x, u64 y)
+static _inline_ u64 sub64_alu32(u64 x, u64 y)
 {
         u32 xh, xl, yh, yl;
         u32 hi, lo;
@@ -99,14 +99,14 @@ int filter2(struct __sk_buff *skb _unused_)
 	a = args_get(ARG_0);
 	b = args_get(ARG_1);
 
-	r = sub64v2(a, b);
+	r = sub64_alu32(a, b);
 
 	args_put(RES_0, r);
 
 	return SK_PASS;
 }
 
-extern u64 sub64v3(u64 x, u64 y);
+extern u64 sub64_ir(u64 x, u64 y);
 
 _section_("socket3")
 int filter3(struct __sk_buff *skb _unused_)
@@ -116,7 +116,7 @@ int filter3(struct __sk_buff *skb _unused_)
 	a = args_get(ARG_0);
 	b = args_get(ARG_1);
 
-	r = sub64v3(a, b);
+	r = sub64_ir(a, b);
 
 	args_put(RES_0, r);
 

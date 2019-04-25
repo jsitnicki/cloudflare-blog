@@ -2,7 +2,7 @@
 bpf/filter.o:	file format ELF64-BPF
 
 Disassembly of section .text:
-sub64v3:
+sub64_ir:
        0:	w3 = 1
        1:	w4 = w2
        2:	r4 <<= 32

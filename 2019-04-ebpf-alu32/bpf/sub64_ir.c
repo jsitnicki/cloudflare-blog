@@ -1,6 +1,6 @@
 #include "common.h"
 
-u64 sub64v3(u64 x, u64 y)
+u64 sub64_ir(u64 x, u64 y)
 {
         u32 xh, xl, yh, yl;
         u32 hi, lo;

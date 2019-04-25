@@ -1,10 +1,10 @@
-; ModuleID = 'bpf/sub64v3.c'
-source_filename = "bpf/sub64v3.c"
+; ModuleID = 'bpf/sub64_ir.c'
+source_filename = "bpf/sub64_ir.c"
 target datalayout = "e-m:e-p:64:64-i64:64-n32:64-S128"
 target triple = "bpf"
 
 ; Function Attrs: alwaysinline norecurse nounwind readnone
-define dso_local i64 @sub64v3(i64, i64) local_unnamed_addr #0 {
+define dso_local i64 @sub64_ir(i64, i64) local_unnamed_addr #0 {
   %3 = trunc i64 %0 to i32
   %4 = trunc i64 %1 to i32
   %5 = sub i32 %3, %4

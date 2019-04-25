@@ -23,7 +23,7 @@ rule go-build
   command = go build -o $out $in
 
 build bpf/filter.ll: ll-bpf bpf/filter.c
-build bpf/filter.bc: bc-link bpf/filter.ll bpf/sub64v3.ll
+build bpf/filter.bc: bc-link bpf/filter.ll bpf/sub64_ir.ll
 build bpf/filter.o: llc-bpf bpf/filter.bc
 build bpf/filter.s: objdump bpf/filter.o
 
@@ -37,13 +37,13 @@ build amd64/sub64.o: cc-amd64 amd64/sub64.c
 build amd64/sub64.s: objdump amd64/sub64.o
 
 #
-# sub64v3 - manually tweaked IR
+# sub64_ir - manually tweaked IR
 #
 
 # Uncomment if you want to regenerate Clang's IR.
-#build bpf/sub64v3.ll: ll-bpf bpf/sub64v3.c
-build bpf/sub64v3.o: llc-bpf bpf/sub64v3.ll
-build bpf/sub64v3.s: objdump bpf/sub64v3.o
+#build bpf/sub64_ir.ll: ll-bpf bpf/sub64_ir.c
+build bpf/sub64_ir.o: llc-bpf bpf/sub64_ir.ll
+build bpf/sub64_ir.s: objdump bpf/sub64_ir.o
 
 #
 # Distilled examples for volatile load/store
