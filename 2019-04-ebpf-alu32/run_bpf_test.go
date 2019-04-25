@@ -1,26 +1,24 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
 
-var ctx *Context
+func TestFilter1(t *testing.T) { testFilter(t, 1) }
+func TestFilter2(t *testing.T) { testFilter(t, 2) }
+func TestFilter3(t *testing.T) { testFilter(t, 3) }
 
-func TestMain(m *testing.M) {
-	var err error
-
-	ctx, err = loadBPF()
+func testFilter(t *testing.T, filterNum uint) {
+	ctx, err := loadBPF(filterNum)
 	if err != nil {
-		panic(err)
+		t.Fatalf("loadBPF: %v", err)
 	}
 	defer ctx.Close()
 
-	rc := m.Run()
-	os.Exit(rc)
+	testSub64(t, ctx)
 }
 
-func TestBpfSub64(t *testing.T) {
+func testSub64(t *testing.T, ctx *Context) {
 	tests := []struct {
 		A, B uint64
 	}{
@@ -41,12 +39,12 @@ func TestBpfSub64(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testBpfSub64(t, test.A, test.B)
-		testBpfSub64(t, test.B, test.A)
+		testOneSub64(t, ctx, test.A, test.B)
+		testOneSub64(t, ctx, test.B, test.A)
 	}
 }
 
-func testBpfSub64(t *testing.T, arg0, arg1 uint64) {
+func testOneSub64(t *testing.T, ctx *Context, arg0, arg1 uint64) {
 	diff, err := runBPF(ctx, arg0, arg1)
 	if err != nil {
 		t.Fatalf("runBPF(%#x, %#x) failed: %v", arg0, arg1, err)

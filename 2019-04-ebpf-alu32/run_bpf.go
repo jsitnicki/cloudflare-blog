@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	filterNum     = flag.Uint("filter", 1, "Filter number to load")
+	filterArg     = flag.Uint("filter", 1, "Filter number to load")
 	stopAfterLoad = flag.Bool("stop-after-load", false, "Stop the process after loading BPF program")
 )
 
@@ -55,14 +55,14 @@ func (c *Context) Close() error {
 	return err2
 }
 
-func loadBPF() (*Context, error) {
+func loadBPF(filterNum uint) (*Context, error) {
 	coll, err := ebpf.LoadCollection("bpf/filter.o")
 	if err != nil {
 		return nil, err
 	}
 	defer coll.Close()
 
-	progName := fmt.Sprintf("filter%d", *filterNum)
+	progName := fmt.Sprintf("filter%d", filterNum)
 	prog := coll.DetachProgram(progName)
 	if prog == nil {
 		return nil, fmt.Errorf("program %q not found", progName)
@@ -146,7 +146,7 @@ func parseArgs() (uint64, uint64) {
 func main() {
 	arg0, arg1 := parseArgs()
 
-	ctx, err := loadBPF()
+	ctx, err := loadBPF(*filterArg)
 	if err != nil {
 		panic(err)
 	}
