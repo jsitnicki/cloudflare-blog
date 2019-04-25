@@ -123,4 +123,36 @@ int filter3(struct __sk_buff *skb _unused_)
 	return SK_PASS;
 }
 
+static _inline_ u64 sub64_stv(u64 x, u64 y)
+{
+        u32 xh, xl, yh, yl;
+        u32 hi, lo;
+
+        xl = x;
+        yl = y;
+        ST_V(lo, xl - yl);
+
+        xh = x >> 32;
+        yh = y >> 32;
+        ST_V(hi, xh - yh - (lo > xl) /* underflow? */);
+
+        return ((u64)hi << 32) | (u64)lo;
+}
+
+_section_("socket4")
+int filter4(struct __sk_buff *skb _unused_)
+{
+	u64 a, b, r;
+
+	a = args_get(ARG_0);
+	b = args_get(ARG_1);
+
+	r = sub64_stv(a, b);
+
+	args_put(RES_0, r);
+
+	return SK_PASS;
+}
+
+
 char __license[] _section_("license") = "Dual BSD/GPL";

@@ -7,6 +7,7 @@ import (
 func TestFilter1(t *testing.T) { testFilter(t, 1) }
 func TestFilter2(t *testing.T) { testFilter(t, 2) }
 func TestFilter3(t *testing.T) { testFilter(t, 3) }
+func TestFilter4(t *testing.T) { testFilter(t, 4) }
 
 func testFilter(t *testing.T, filterNum uint) {
 	ctx, err := loadBPF(filterNum)
