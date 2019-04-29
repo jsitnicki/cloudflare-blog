@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	filterArg     = flag.Uint("filter", 1, "Filter number to load")
+	filterArg     = flag.String("filter", "alu64", "Filter variant to load: \"alu64\", \"alu32\", \"ir\", \"stv\"")
 	stopAfterLoad = flag.Bool("stop-after-load", false, "Stop the process after loading BPF program")
 )
 
@@ -55,14 +55,14 @@ func (c *Context) Close() error {
 	return err2
 }
 
-func loadBPF(filterNum uint) (*Context, error) {
+func loadBPF(filterName string) (*Context, error) {
 	coll, err := ebpf.LoadCollection("bpf/filter.o")
 	if err != nil {
 		return nil, err
 	}
 	defer coll.Close()
 
-	progName := fmt.Sprintf("filter%d", filterNum)
+	progName := fmt.Sprintf("filter_%s", filterName)
 	prog := coll.DetachProgram(progName)
 	if prog == nil {
 		return nil, fmt.Errorf("program %q not found", progName)

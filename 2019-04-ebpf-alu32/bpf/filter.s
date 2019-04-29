@@ -20,8 +20,8 @@ LBB4_2:
       12:	r0 <<= 32
       13:	r0 |= r1
       14:	exit
-Disassembly of section socket1:
-filter1:
+Disassembly of section socket2:
+filter_alu32:
        0:	w1 = 0
        1:	*(u32 *)(r10 - 16) = r1
        2:	r2 = r10
@@ -44,43 +44,6 @@ LBB0_2:
       19:	r7 = *(u64 *)(r0 + 0)
 
 LBB0_4:
-      20:	r6 -= r7
-      21:	*(u64 *)(r10 - 16) = r6
-      22:	w1 = 2
-      23:	*(u32 *)(r10 - 4) = r1
-      24:	r2 = r10
-      25:	r2 += -4
-      26:	r3 = r10
-      27:	r3 += -16
-      28:	r1 = 0 ll
-      30:	r4 = 0
-      31:	call 2
-      32:	w0 = 1
-      33:	exit
-Disassembly of section socket2:
-filter2:
-       0:	w1 = 0
-       1:	*(u32 *)(r10 - 16) = r1
-       2:	r2 = r10
-       3:	r2 += -16
-       4:	r1 = 0 ll
-       6:	call 1
-       7:	r7 = 0
-       8:	r6 = 0
-       9:	if r0 == 0 goto +1 <LBB1_2>
-      10:	r6 = *(u64 *)(r0 + 0)
-
-LBB1_2:
-      11:	w1 = 1
-      12:	*(u32 *)(r10 - 16) = r1
-      13:	r2 = r10
-      14:	r2 += -16
-      15:	r1 = 0 ll
-      17:	call 1
-      18:	if r0 == 0 goto +1 <LBB1_4>
-      19:	r7 = *(u64 *)(r0 + 0)
-
-LBB1_4:
       20:	w2 = w7
       21:	r2 <<= 32
       22:	r2 >>= 32
@@ -88,10 +51,10 @@ LBB1_4:
       24:	r3 <<= 32
       25:	r3 >>= 32
       26:	w1 = 1
-      27:	if r2 > r3 goto +1 <LBB1_6>
+      27:	if r2 > r3 goto +1 <LBB0_6>
       28:	w1 = 0
 
-LBB1_6:
+LBB0_6:
       29:	r2 = r7
       30:	r2 >>= 32
       31:	r3 = r6
@@ -115,8 +78,45 @@ LBB1_6:
       50:	call 2
       51:	w0 = 1
       52:	exit
+Disassembly of section socket1:
+filter_alu64:
+       0:	w1 = 0
+       1:	*(u32 *)(r10 - 16) = r1
+       2:	r2 = r10
+       3:	r2 += -16
+       4:	r1 = 0 ll
+       6:	call 1
+       7:	r7 = 0
+       8:	r6 = 0
+       9:	if r0 == 0 goto +1 <LBB1_2>
+      10:	r6 = *(u64 *)(r0 + 0)
+
+LBB1_2:
+      11:	w1 = 1
+      12:	*(u32 *)(r10 - 16) = r1
+      13:	r2 = r10
+      14:	r2 += -16
+      15:	r1 = 0 ll
+      17:	call 1
+      18:	if r0 == 0 goto +1 <LBB1_4>
+      19:	r7 = *(u64 *)(r0 + 0)
+
+LBB1_4:
+      20:	r6 -= r7
+      21:	*(u64 *)(r10 - 16) = r6
+      22:	w1 = 2
+      23:	*(u32 *)(r10 - 4) = r1
+      24:	r2 = r10
+      25:	r2 += -4
+      26:	r3 = r10
+      27:	r3 += -16
+      28:	r1 = 0 ll
+      30:	r4 = 0
+      31:	call 2
+      32:	w0 = 1
+      33:	exit
 Disassembly of section socket3:
-filter3:
+filter_ir:
        0:	w1 = 0
        1:	*(u32 *)(r10 - 16) = r1
        2:	r2 = r10
@@ -168,7 +168,7 @@ LBB2_6:
       45:	w0 = 1
       46:	exit
 Disassembly of section socket4:
-filter4:
+filter_stv:
        0:	w1 = 0
        1:	*(u32 *)(r10 - 16) = r1
        2:	r2 = r10

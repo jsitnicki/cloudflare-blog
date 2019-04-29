@@ -61,7 +61,7 @@ static _inline_ void args_put(u32 key, u64 v)
 }
 
 _section_("socket1")
-int filter1(struct __sk_buff *skb _unused_)
+int filter_alu64(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
@@ -92,7 +92,7 @@ static _inline_ u64 sub64_alu32(u64 x, u64 y)
 }
 
 _section_("socket2")
-int filter2(struct __sk_buff *skb _unused_)
+int filter_alu32(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
@@ -109,7 +109,7 @@ int filter2(struct __sk_buff *skb _unused_)
 extern u64 sub64_ir(u64 x, u64 y);
 
 _section_("socket3")
-int filter3(struct __sk_buff *skb _unused_)
+int filter_ir(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
@@ -140,7 +140,7 @@ static _inline_ u64 sub64_stv(u64 x, u64 y)
 }
 
 _section_("socket4")
-int filter4(struct __sk_buff *skb _unused_)
+int filter_stv(struct __sk_buff *skb _unused_)
 {
 	u64 a, b, r;
 
