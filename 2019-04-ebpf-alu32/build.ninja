@@ -17,7 +17,7 @@ rule objdump
   command = llvm-objdump -S -no-show-raw-insn $in > $out
 
 rule go-build
-  command = go build -o $out $in
+  command = go get github.com/newtools/ebpf && go build -o $out $in
 
 
 #
