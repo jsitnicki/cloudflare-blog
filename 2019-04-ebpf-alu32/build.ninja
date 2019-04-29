@@ -19,6 +19,12 @@ rule objdump
 rule go-build
   command = go build -o $out $in
 
+
+#
+# Build a socket filter that uses a function from an IR module.
+# The external IR function needs to have alwaysinline attribute set.
+#
+
 build bpf/filter.ll: ll-bpf bpf/filter.c
 build bpf/filter.bc: bc-link bpf/filter.ll bpf/sub64_ir.ll
 build bpf/filter.o: llc-bpf bpf/filter.bc
