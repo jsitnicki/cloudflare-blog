@@ -56,7 +56,7 @@ func (c *Context) Close() error {
 }
 
 func loadBPF(filterName string) (*Context, error) {
-	coll, err := ebpf.LoadCollection("bpf/filter.o")
+	coll, err := ebpf.LoadCollection("bpf/filter_alu32.o")
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,9 @@
 rule cc-bpf
   command = clang -g -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -c $in -o $out
 
+rule cc-opt-bpf
+  command = clang -g -O0 -Wall -Wextra -target bpf -emit-llvm -c $in -o - | opt -O2 | llc -march=bpf -mattr=+alu32 -filetype=obj -o $out
+
 rule ll-bpf
   command = clang -O2 -Wall -Wextra -target bpf -Xclang -target-feature -Xclang +alu32 -emit-llvm -S -c $in -o $out
 
@@ -19,6 +22,8 @@ rule objdump
 rule go-build
   command = go get github.com/newtools/ebpf && go build -o $out $in
 
+build bpf/filter_alu32.o: cc-opt-bpf bpf/filter_alu32.c
+build bpf/filter_alu32.s: objdump bpf/filter_alu32.o
 
 #
 # Build a socket filter that uses a function from an IR module.
